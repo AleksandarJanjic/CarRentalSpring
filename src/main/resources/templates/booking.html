@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Booking</title>
+</head>
+<body>
+  <div id="form">
+    <form action="">
+      <p>Driver Name: </p>
+        <input type="text" name="driverName" id="driverName"><br>
+      <p>Your phone number: </p>
+        <input type="text" name="phoneNum" id="phoneNum"><br>
+      <p>Your age: </p>
+        <input type="text" name="age" id="age"><br>
+      <p>Your email: </p>
+        <input type="text" name="eMail" id="eMail"><br>
+      <p>Choose your vehicle category</p>
+      <select name="category" id="category" onchange="datedifference()">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+        <option value="F">F</option>
+      </select>
+      <p>Pickup Office</p>
+      <select name="pickupOffice" id="office">
+      </select>
+      <p>Pickup Date and Time:</p>
+      <input type="datetime-local" name="pickuptime" id="pickupTime" onchange="datedifference()">
+      <p>Dropoff Office</p>
+      <select name="dropoffOffice" id="office2">
+      </select>
+      <p>Dropoff Date and Time:</p>
+      <input type="datetime-local" name="dropofftime" id="dropoffTime" onchange="datedifference()">
+      <p>Your total price is: <p id="totalprice">0.0</p></p>
+    </form>
+    <button onclick="sendBookingInfo()">Submit</button>
+    <p id="response"></p>
+  </div>
+<script>
+var bookingInfoURL = "/booking/info";
+var createBookingURL = "/booking/create";
+var jsonObj;
+function getBookingInfo() {
+  var httpGet = new XMLHttpRequest();
+  httpGet.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+       jsonObj = JSON.parse(httpGet.response);
+       console.log(jsonObj);
+       console.log(jsonObj.prices[1]);
+       console.log(jsonObj.offices["Belgrade Airport"]);
+       populate(jsonObj.offices, "office");
+       populate(jsonObj.offices, "office2");
+     }
+  };
+  httpGet.open('GET', bookingInfoURL);
+  XMLHttpRequest.responseType = "json";
+  httpGet.send();
+};
+function sendBookingInfo() {
+  var httpGet = new XMLHttpRequest();
+  var url = "/booking/create";
+  var name = document.getElementById("driverName").value;
+  var phone = document.getElementById("phoneNum").value;
+  var age = document.getElementById("age").value;
+  var email = document.getElementById("eMail").value;
+  var category = document.getElementById("category").value;
+  var pickupO = document.getElementById("office").value;
+  var dropoffO = document.getElementById("office2").value;
+  var price = document.getElementById("totalprice").innerHTML;
+  var pickuptime = document.getElementById("pickupTime").value;
+  var dropofftime = document.getElementById("dropoffTime").value;
+  var params = "name="+name+"&"+"phone="+phone+"&"+"age="+age+"&"+"email="+email+"&"+"category="
+  +category+"&"+"pickupOffice="+pickupO+"&"+"pickuptime="+pickuptime+"&"+"dropoffO="+dropoffO+"&"+"dropofftime="+dropofftime+
+  "&"+"price="+price;
+  httpGet.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("response").innerHTML = httpGet.response;
+     }
+  };
+  httpGet.open('POST', url + "?" + params);
+  httpGet.send();
+};
+function populate(list, id) {
+  Object.keys(list).forEach(function(key) {
+    var option = document.createElement("option");
+    var text = document.createTextNode(key + ", " + list[key]);
+    option.appendChild(text);
+    document.getElementById(id).appendChild(option);
+    console.log('Key : ' + key + ', Value : ' + list[key]);
+  });
+};
+function datedifference() {
+  var url = "/booking/totalPrice";
+  var beginning = Date.parse(document.getElementById("pickupTime").value);
+  var ending = Date.parse(document.getElementById("dropoffTime").value);
+  var category = document.getElementById("category").value;
+  if (beginning < ending) {
+    var difference = Math.floor((ending - beginning) / 1000 / 60 / 60 / 24);
+    console.log(difference);
+    var httpGet = new XMLHttpRequest();
+    httpGet.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("totalprice").innerHTML = httpGet.response;
+      }
+    }
+    if(difference == 0) {
+      difference = 1;
+    }
+    var params = "category="+category+"&"+"numdays="+difference;
+    httpGet.open('GET', url + "?" + params);
+    httpGet.send();
+  };
+};
+document.getElementById("pickupTime").addEventListener("onchange", datedifference());
+document.getElementById("dropoffTime").addEventListener("onchange", datedifference());
+getBookingInfo();
+</script>
+</body>
+</html>

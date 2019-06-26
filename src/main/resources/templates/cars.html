@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Cars</title>
+</head>
+<body>
+<h1>These are our cars</h1>
+<div id="cars"></div>
+<p id="result"></p>
+<script type='text/javascript'>
+  var url = "/cars/all";
+  var name = "";
+  var city = "";
+  var carclass = "";
+  var params = "name="+name+"&"+"city="+city+"&"+"carclass="+carclass;
+  var jsonObj;
+  function getcars() {
+    var httpGet = new XMLHttpRequest();
+    httpGet.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+         jsonObj = JSON.parse(httpGet.response);
+         console.log(jsonObj);
+         console.log("done");
+         displayCars(jsonObj, "cars");
+       }
+       };
+    httpGet.open('GET', url + "?" + params);
+    XMLHttpRequest.responseType = "json";
+    httpGet.send();
+  };
+  function displayCars(list, id) {
+    for (i in list) {
+      let count = 1;
+      var div = document.createElement("div");
+      div.setAttribute("id", "carId" + count);
+      var carClass = list[i].carclass;
+      var carModel = list[i].carModel;
+      var carBrand = list[i].manufacturer;
+      var carClassP = document.createElement("p");
+      var carBrandP = document.createElement("p");
+      var carModelP = document.createElement("p");
+      var carClassPtext = document.createTextNode(carClass);
+      var carBrandPtext = document.createTextNode(carBrand);
+      var carModelPtext = document.createTextNode(carModel);
+      carClassP.appendChild(carClassPtext);
+      carBrandP.appendChild(carBrandPtext);
+      carModelP.appendChild(carModelPtext);
+      div.appendChild(carClassP);
+      div.appendChild(carBrandP);
+      div.appendChild(carModelP);
+      document.getElementById(id).appendChild(div);
+      console.log(list[i]);
+      count++;
+    };
+  };
+  getcars();
+
+</script>
+</body>
+</html>
